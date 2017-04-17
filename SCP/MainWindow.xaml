@@ -1,0 +1,29 @@
+﻿<Window x:Class="MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SCP"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="264*"/>
+            <RowDefinition Height="27*"/>
+        </Grid.RowDefinitions>
+        <Menu x:Name="menu" Grid.Row="0" Height="Auto" Margin="0" Width="Auto">
+            <MenuItem Header="Proyecto">
+                <MenuItem x:Name="mNuevo" Header="Nuevo..."/>
+                <MenuItem x:Name="mAbrir" Header="Abrir..."/>
+                <Separator/>
+                <MenuItem x:Name="mGuardar" Header="Guardar"/>
+                <MenuItem x:Name="mGuardarComo" Header="Guardar como..."/>
+                <Separator/>
+                <MenuItem x:Name="mImportar" Header="Importar presupuesto..."/>
+                <Separator/>
+                <MenuItem x:Name="mSalir" Header="Salir"/>
+            </MenuItem>
+        </Menu>
+    </Grid>
+</Window>
