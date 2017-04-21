@@ -5,6 +5,7 @@ Imports SCP
 Public Class ClPartida
     Implements INotifyPropertyChanged 'Es necesario para usar el Binding
 
+    ' Private _espec As ClEspecialidad 'Se registra la Especialidad a la que pertenece
     Private _codigo As String 'Código interno de la partida
     Private _codcli As String 'Código de la partida dado por el Cliente
     Private _descripcion As String
@@ -13,8 +14,8 @@ Public Class ClPartida
     Private _pu As Double
     Private _rdmo As Double
     Private _rdeq As Double
-    Private _lrec As ClApu
-    Private _lsp As ObservableCollection(Of ClSp)
+    Private _lrecApu As ClApu  'Listado de recursos del apu, incluye el campo cuadrilla
+    Private _lsp As ClPartidas  'Listado de subpartidas de la partida
 
     Public Property Codigo As String
         Get
@@ -118,35 +119,32 @@ Public Class ClPartida
         End Get
     End Property
 
-    Public ReadOnly Property ParcialCalc As Double
+    Public Property LrecApu As ClApu
         Get
-            Return CalculaParcial()
-        End Get
-    End Property
-
-    Public ReadOnly Property NumSP As Integer
-        Get
-            Return Lsp.Count
-        End Get
-    End Property
-
-    Public Property Lrec As ClApu
-        Get
-            Return _lrec
+            Return _lrecApu
         End Get
         Set(value As ClApu)
-            _lrec = value
+            _lrecApu = value
         End Set
     End Property
 
-    Public Property Lsp As ObservableCollection(Of ClSp)
+    Public Property Lsp As ClPartidas
         Get
             Return _lsp
         End Get
-        Set(value As ObservableCollection(Of ClSp))
+        Set(value As ClPartidas)
             _lsp = value
         End Set
     End Property
+
+    '   Public Property Espec As ClEspecialidad
+    '   Get
+    '  Return _espec
+    ' End Get
+    'Set(value As ClEspecialidad)
+    '       _espec = value
+    'End Set
+    'End Property
 
     <NonSerialized()>
     Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
@@ -156,42 +154,85 @@ Public Class ClPartida
     End Sub
 
     Public Sub New(ByVal cod As String, ByVal desc As String, ByVal und As String, ByVal metrado As Double,
-                   ByVal pu As Double)
+                   ByVal pu As Double, ByRef Espec As ClEspecialidad)
         _codcli = cod 'cuando el cliente brinda código, el código interno es igual al codigo cliente
         _codigo = cod
         _descripcion = desc
         _und = und
         _metrado = metrado
         _pu = pu
-        Lrec = New ClApu
-        Lsp = New ObservableCollection(Of ClSp)
+        '  Me.Espec = Espec
+        LrecApu = New ClApu
+        Lsp = New ClPartidas
     End Sub
 
-    Public Sub AgregaRecApu(ByVal CodRec As String, ByVal Desc As String, und As String, ByVal Cant As Double,
-                            ByVal Cuad As Double, ByVal Prec As Double, ByVal Tip As String)
-        Dim Rec As ClRecApu
-
-        Rec = New ClRecApu(CodRec, Desc, und, Cant, Cuad, Prec, Tip)
-        Lrec.Add(Rec)
+    Public Sub New(ByVal cod As String, ByVal desc As String, ByVal und As String, ByVal metrado As Double,
+                   ByVal pu As Double, ByRef Espec As ClEspecialidad, ByVal RdMo As Double, RdEq As Double)
+        Me.New(cod, desc, und, metrado, pu, Espec)
+        Me.Rdmo = RdMo
+        Me.Rdeq = RdEq
     End Sub
 
-    Public Function CalculaParcial() As Double
-        Dim rec As New ClRecApu()
-        Dim sp As ClSp
+    Private Shared Function CalcularRecursos(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClRecursos
+        Dim lista As New ClRecursos
+        Dim rec As ClRecurso, i As Integer
+        Dim TemPu As ClApu = ClClonarObj.Clonar(Part.LrecApu)
+        Dim BdTemp As New ClPartidas
 
-        Dim suma As Double
 
-        suma = 0.0
-        For Each rec In Lrec
-            suma += rec.Parcial
+        'For i = 0 To Part.LrecApu.Count - 1
+        ' TemPu.Add(Part.LrecApu(i))
+        ' Next
+
+        For Each recApu As ClRecApu In TemPu
+            recApu.Cantidad *= Part.Metrado
+            rec = recApu
+            lista.Add(rec)
         Next
-        If NumSP <> 0 Then
-            For Each sp In Lsp
-                suma += sp.CalculaParcial
+
+        If Part.Lsp.Any Then
+            For Each sp As ClPartida In Part.Lsp
+                i = BDSP.BuscaPartxNom(sp.Descripcion)
+                Dim spclone As ClPartida = ClClonarObj.Clonar(BDSP(i))
+                BdTemp.Add(spclone)
+                BdTemp.Last.Metrado = sp.Metrado * Part.Metrado
             Next
         End If
-        Return suma
+
+        If Part.Lsp.Any Then
+            For Each sp As ClPartida In BdTemp
+                lista.AnexaLista(CalcularRecursos(sp, BDSP))
+            Next
+        End If
+
+        TemPu.Clear()
+        TemPu = Nothing
+
+        BdTemp.Clear()
+        BdTemp = Nothing
+
+        Return lista
+
     End Function
 
+    Public Shared Function ListarRecursos(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClRecursos
+        Dim listaRec As New ClRecursos, i As Integer, j As Integer
+        Dim Correcion As Double, parcial As Double
+
+        listaRec = CalcularRecursos(Part, BDSP)
+        parcial = listaRec.SubTotalRec
+        i = 0
+        Do Until (Math.Abs(Part.Parcial - parcial) <= ErrorRed) Or (i >= MaxIteraciones)
+            Correcion = Part.Parcial / parcial
+            For Each rec As ClRecurso In listaRec
+                rec.Cantidad *= Correcion
+            Next
+            parcial = listaRec.SubTotalRec
+            i += 1
+        Loop
+
+        Return listaRec
+
+    End Function
 
 End Class

@@ -1,12 +1,13 @@
 ﻿Imports System.Collections.ObjectModel
 Imports SCP
-
+<Serializable>
 Public Class ClEspecialidad
     Private _nombre As String
     Private _moneda As String
     Private _cdirecto As Double 'registra el costo directo
-    Private _lsPartidas As ObservableCollection(Of ClPartida) 'Partidas y metrados que forman el Presupuesto
-    Private _lsSP As ObservableCollection(Of ClSp) 'Sub partidas por especialidad
+    Private _lsPartidas As ClPartidas  'Partidas y metrados de la especialidad
+    Private _lsSP As ClPartidas  'Sub partidas de la especialidad
+    Private _lRec As ClRecursos 'Listado de recursos de la especialidad
 
     Public Property Nombre As String
         Get
@@ -35,45 +36,38 @@ Public Class ClEspecialidad
         End Set
     End Property
 
-    Public Property lsPartidas As ObservableCollection(Of ClPartida)
+    Public Property lsPartidas As ClPartidas
         Get
             Return _lsPartidas
         End Get
-        Set(value As ObservableCollection(Of ClPartida))
+        Set(value As ClPartidas)
             _lsPartidas = value
         End Set
     End Property
 
-    Public Property LsSP As ObservableCollection(Of ClSp)
+    Public Property LsSP As ClPartidas
         Get
             Return _lsSP
         End Get
-        Set(value As ObservableCollection(Of ClSp))
+        Set(value As ClPartidas)
             _lsSP = value
         End Set
     End Property
 
+    Public Property LRec As ClRecursos
+        Get
+            Return _lRec
+        End Get
+        Set(value As ClRecursos)
+            _lRec = value
+        End Set
+    End Property
+
     Public Sub New()
-        lsPartidas = New ObservableCollection(Of ClPartida)
-        LsSP = New ObservableCollection(Of ClSp)
+        lsPartidas = New ClPartidas
+        LsSP = New ClPartidas
+        LRec = New ClRecursos
     End Sub
 
-    Public Function BuscaPartxCod(ByVal cod As String) As Integer
-        Dim query = (From partida In _lsPartidas Where partida.Codigo = cod
-                     Select partida)
-        If query.Any Then
-            Return _lsPartidas.IndexOf(query.First)
-        Else Return -1
-        End If
-    End Function
-
-    Public Function BuscaSPxNom(ByVal NomSP As String) As Integer
-        Dim query = (From sp In _lsSP Where sp.Descripcion = NomSP
-                     Select sp)
-        If query.Any Then
-            Return _lsSP.IndexOf(query.First)
-        Else Return -1
-        End If
-    End Function
 
 End Class

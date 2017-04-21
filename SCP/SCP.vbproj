@@ -108,14 +108,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="My Project\ClApu.vb" />
+    <Compile Include="My Project\ClClonarObj.vb" />
     <Compile Include="My Project\ClEspecialidad.vb" />
     <Compile Include="My Project\ClExcel.vb" />
     <Compile Include="My Project\ClPartida.vb" />
+    <Compile Include="My Project\ClPartidas.vb" />
     <Compile Include="My Project\ClProy.vb" />
     <Compile Include="My Project\ClRecApu.vb" />
     <Compile Include="My Project\ClRecurso.vb" />
     <Compile Include="My Project\ClRecursos.vb" />
-    <Compile Include="My Project\ClSp.vb" />
     <Compile Include="My Project\ImportPresup.xaml.vb">
       <DependentUpon>ImportPresup.xaml</DependentUpon>
     </Compile>

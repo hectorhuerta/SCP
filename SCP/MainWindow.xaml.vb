@@ -14,7 +14,8 @@ Class MainWindow
 
         If dlg.ShowDialog() Then
             dlg.Xlap.ImportaPresup("PRESUPUESTO", "C", "E", "F", "G", "H", 2, Espec, "")
-            dlg.Xlap.ImportaPU("PARTIDAS", "D", "G", "G", "I", "D", "K", "L", "M", "N", 10, "B", Espec)
+            dlg.Xlap.ImportaPU("PARTIDAS", "D", "G", "G", "I", "B", "D", "K", "L", "M", "N", 10, "B", Espec, False)
+            dlg.Xlap.ImportaPU("SUB PARTIDAS", "D", "G", "G", "I", "B", "D", "K", "L", "M", "N", 10, "B", Espec, True)
         End If
 
 

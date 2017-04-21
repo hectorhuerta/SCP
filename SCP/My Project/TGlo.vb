@@ -1,4 +1,7 @@
-﻿Module TGlo
+﻿Imports System.Collections.ObjectModel
+
+
+Module TGlo
     'Máximo número de filas blancas entre APUs en la hoja Excel
     Public Const MaxFil As Integer = 5
 

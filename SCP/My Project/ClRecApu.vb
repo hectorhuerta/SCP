@@ -1,4 +1,5 @@
-﻿Public Class ClRecApu
+﻿<Serializable>
+Public Class ClRecApu
     Inherits ClRecurso
     Private _cuadrilla As Double
 

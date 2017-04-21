@@ -103,7 +103,7 @@ Public Class ClExcel
             Metrado = ConvDouble(xlsheet, ColMet, i)
             PU = ConvDouble(xlsheet, ColPu, i)
 
-            Part = New ClPartida(Cod, Descrip, Und, Metrado, PU)
+            Part = New ClPartida(Cod, Descrip, Und, Metrado, PU, Espec)
             Espec.lsPartidas.Add(Part)
             i += 1
         Loop
@@ -111,16 +111,16 @@ Public Class ClExcel
     End Sub
 
     Public Sub ImportaPU(ByVal NomHoja As String, ByVal ColCod As String, ByVal ColDes As String,
-                         ByVal ColRMo As String, ByVal ColREq As String, ByVal ColDesRec As String,
-                         ByVal ColUnd As String, ByVal ColCuad As String, ByVal ColCant As String,
-                         ByVal ColPre As String, ByVal FIni As Integer, ByVal ColIni As String,
-                         ByRef Espec As ClEspecialidad)
+                         ByVal ColRMo As String, ByVal ColREq As String, ByVal ColCodRec As String,
+                         ByVal ColDesRec As String, ByVal ColUnd As String, ByVal ColCuad As String,
+                         ByVal ColCant As String, ByVal ColPre As String, ByVal FIni As Integer,
+                         ByVal ColIni As String, ByRef Espec As ClEspecialidad, ImpSP As Boolean)
 
-        Dim Cod As String, DescPart As String, RMo As Double, REq As Double, DescRec As String
+        Dim Cod As String, DescPart As String, RMo As Double, REq As Double, DescRec As String, CodRec As String
         Dim Und As String, Cuadrilla As Double, Cantidad As Double, Precio As Double, i As Integer, j As Integer
         Dim FilBlanc As Integer
-        Dim xlsheet As New Excel.Worksheet, apu As ClApu, Recurso As ClRecApu, Sp As ClSp
-        Dim ListaSP As ObservableCollection(Of ClSp)
+        Dim xlsheet As New Excel.Worksheet, apu As ClApu, Recurso As ClRecApu, Sp As ClPartida
+        Dim ListaSP As ClPartidas
         Dim NuevaPartida As String, TipoRec As String
 
         'FilBlanc, es un contador de filas blancas para la lectura de los APU
@@ -136,6 +136,7 @@ Public Class ClExcel
         DescPart = ""
         RMo = 0.0
         REq = 0.0
+        CodRec = ""
         DescRec = ""
         Und = ""
         Cuadrilla = 0.0
@@ -157,8 +158,13 @@ Public Class ClExcel
                 RMo = ConvDouble(xlsheet, ColRMo, i)
                 REq = ConvDouble(xlsheet, ColREq, i)
 
+                If ImpSP Then
+                    Espec.LsSP.Add(New ClPartida(Cod, DescPart, "", 0, 0, Espec, RMo, REq))
+                End If
+
                 Do Until (FilBlanc >= MaxFil) Or EvalEncab(DescRec)
                     i += 1
+                    CodRec = LeeCelda(xlsheet, ColCodRec, i)
                     DescRec = LeeCelda(xlsheet, ColDesRec, i)
                     If DescRec = "" OrElse DescRec = EncabS10 Then
                         FilBlanc += 1
@@ -171,10 +177,11 @@ Public Class ClExcel
             NuevaPartida = ""
             FilBlanc = 0
             apu = New ClApu
-            ListaSP = New ObservableCollection(Of ClSp)
+            ListaSP = New ClPartidas
 
             Do Until (FilBlanc >= MaxFil) Or (UCase(NuevaPartida) = UCase(NApu))
                 NuevaPartida = LeeCelda(xlsheet, ColIni, i)
+                CodRec = LeeCelda(xlsheet, ColCodRec, i)
                 DescRec = LeeCelda(xlsheet, ColDesRec, i)
                 If EvalEncab(DescRec) Then
                     TipoRec = DescRec
@@ -192,11 +199,11 @@ Public Class ClExcel
                 End If
                 i += 1
                 If TipoRec <> TSP And Und <> "" Then
-                    Recurso = New ClRecApu(Cod, DescRec, Und, Cantidad, Cuadrilla, Precio, TipoRec)
+                    Recurso = New ClRecApu(CodRec, DescRec, Und, Cantidad, Cuadrilla, Precio, TipoRec)
                     apu.Add(Recurso)
                 End If
                 If TipoRec = TSP And Und <> "" Then
-                    Sp = New ClSp("", DescRec, Und, Cantidad, Precio, 0, 0)
+                    Sp = New ClPartida("", DescRec, Und, Cantidad, Precio, Espec)
                     ListaSP.Add(Sp)
                 End If
                 If Und = "" Then
@@ -204,14 +211,21 @@ Public Class ClExcel
                 End If
             Loop
 
-            j = Espec.BuscaPartxCod(Cod)
-            If j <> -1 Then
-                Espec.lsPartidas(j).Lrec = apu
-                Espec.lsPartidas(j).Rdeq = REq
-                Espec.lsPartidas(j).Rdmo = RMo
-                Espec.lsPartidas(j).Lsp = ListaSP
+            If ImpSP Then
+                j = Espec.LsSP.BuscaPartxNom(DescPart)
+                If j <> -1 Then
+                    Espec.LsSP(j).LrecApu = apu
+                    Espec.LsSP(j).Lsp = ListaSP
+                End If
+            Else
+                j = Espec.lsPartidas.BuscaPartxCod(Cod)
+                If j <> -1 Then
+                    Espec.lsPartidas(j).LrecApu = apu
+                    Espec.lsPartidas(j).Rdeq = REq
+                    Espec.lsPartidas(j).Rdmo = RMo
+                    Espec.lsPartidas(j).Lsp = ListaSP
+                End If
             End If
-
         Loop
     End Sub
 End Class
