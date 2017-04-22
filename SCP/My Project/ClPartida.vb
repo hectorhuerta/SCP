@@ -5,7 +5,6 @@ Imports SCP
 Public Class ClPartida
     Implements INotifyPropertyChanged 'Es necesario para usar el Binding
 
-    ' Private _espec As ClEspecialidad 'Se registra la Especialidad a la que pertenece
     Private _codigo As String 'Código interno de la partida
     Private _codcli As String 'Código de la partida dado por el Cliente
     Private _descripcion As String
@@ -137,15 +136,6 @@ Public Class ClPartida
         End Set
     End Property
 
-    '   Public Property Espec As ClEspecialidad
-    '   Get
-    '  Return _espec
-    ' End Get
-    'Set(value As ClEspecialidad)
-    '       _espec = value
-    'End Set
-    'End Property
-
     <NonSerialized()>
     Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
@@ -154,21 +144,20 @@ Public Class ClPartida
     End Sub
 
     Public Sub New(ByVal cod As String, ByVal desc As String, ByVal und As String, ByVal metrado As Double,
-                   ByVal pu As Double, ByRef Espec As ClEspecialidad)
+                   ByVal pu As Double)
         _codcli = cod 'cuando el cliente brinda código, el código interno es igual al codigo cliente
         _codigo = cod
         _descripcion = desc
         _und = und
         _metrado = metrado
         _pu = pu
-        '  Me.Espec = Espec
         LrecApu = New ClApu
         Lsp = New ClPartidas
     End Sub
 
     Public Sub New(ByVal cod As String, ByVal desc As String, ByVal und As String, ByVal metrado As Double,
-                   ByVal pu As Double, ByRef Espec As ClEspecialidad, ByVal RdMo As Double, RdEq As Double)
-        Me.New(cod, desc, und, metrado, pu, Espec)
+                   ByVal pu As Double, ByVal RdMo As Double, RdEq As Double)
+        Me.New(cod, desc, und, metrado, pu)
         Me.Rdmo = RdMo
         Me.Rdeq = RdEq
     End Sub
@@ -178,11 +167,6 @@ Public Class ClPartida
         Dim rec As ClRecurso, i As Integer
         Dim TemPu As ClApu = ClClonarObj.Clonar(Part.LrecApu)
         Dim BdTemp As New ClPartidas
-
-
-        'For i = 0 To Part.LrecApu.Count - 1
-        ' TemPu.Add(Part.LrecApu(i))
-        ' Next
 
         For Each recApu As ClRecApu In TemPu
             recApu.Cantidad *= Part.Metrado

@@ -103,7 +103,7 @@ Public Class ClExcel
             Metrado = ConvDouble(xlsheet, ColMet, i)
             PU = ConvDouble(xlsheet, ColPu, i)
 
-            Part = New ClPartida(Cod, Descrip, Und, Metrado, PU, Espec)
+            Part = New ClPartida(Cod, Descrip, Und, Metrado, PU)
             Espec.lsPartidas.Add(Part)
             i += 1
         Loop
@@ -159,7 +159,7 @@ Public Class ClExcel
                 REq = ConvDouble(xlsheet, ColREq, i)
 
                 If ImpSP Then
-                    Espec.LsSP.Add(New ClPartida(Cod, DescPart, "", 0, 0, Espec, RMo, REq))
+                    Espec.LsSP.Add(New ClPartida(Cod, DescPart, "", 0, 0, RMo, REq))
                 End If
 
                 Do Until (FilBlanc >= MaxFil) Or EvalEncab(DescRec)
@@ -203,7 +203,7 @@ Public Class ClExcel
                     apu.Add(Recurso)
                 End If
                 If TipoRec = TSP And Und <> "" Then
-                    Sp = New ClPartida("", DescRec, Und, Cantidad, Precio, Espec)
+                    Sp = New ClPartida("", DescRec, Und, Cantidad, Precio)
                     ListaSP.Add(Sp)
                 End If
                 If Und = "" Then
