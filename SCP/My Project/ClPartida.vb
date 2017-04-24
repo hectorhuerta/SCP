@@ -199,6 +199,32 @@ Public Class ClPartida
 
     End Function
 
+    Public Shared Function ListarSPs(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClPartidas
+        Dim lista As New ClPartidas
+        Dim BDTemp As New ClPartidas, i As Integer
+        If Part.Lsp.Any Then
+            For Each sp As ClPartida In Part.Lsp
+                i = BDSP.BuscaPartxNom(sp.Descripcion)
+                Dim spclone As ClPartida = ClClonarObj.Clonar(BDSP(i))
+                BDTemp.Add(spclone)
+                BDTemp.Last.Metrado = Part.Metrado * sp.Metrado
+                BDTemp.Last.Pu = sp.Pu
+            Next
+            'Anexar lista de subpartidas
+            lista.AnexarLista(BDTemp)
+            For Each sp As ClPartida In BDTemp
+                'Anexar lista de subpartidas
+                lista.AnexarLista(ListarSPs(sp, BDSP))
+            Next
+        End If
+
+        BDTemp.Clear()
+        BDTemp = Nothing
+
+        Return lista
+
+    End Function
+
     Public Shared Function ListarRecursos(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClRecursos
         Dim listaRec As New ClRecursos, i As Integer, j As Integer
         Dim Correcion As Double, parcial As Double

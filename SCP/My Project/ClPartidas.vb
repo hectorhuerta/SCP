@@ -22,4 +22,16 @@ Public Class ClPartidas
         End If
     End Function
 
+    Public Sub AnexarLista(ByRef LPartidas As ClPartidas)
+        Dim i As Integer
+        For Each part As ClPartida In LPartidas
+            i = BuscaPartxNom(part.Descripcion)
+            If i <> -1 Then
+                Items(i).Metrado += part.Metrado
+            Else
+                Items.Add(part)
+            End If
+        Next
+    End Sub
+
 End Class

@@ -54,20 +54,72 @@ Public Class ClEspecialidad
         End Set
     End Property
 
-    Public Property LRec As ClRecursos
+    Public ReadOnly Property LRec As ClRecursos
         Get
-            Return _lRec
+            If _lRec.Any Then
+                Return _lRec
+            Else
+                Return ListarRecursos()
+            End If
         End Get
-        Set(value As ClRecursos)
-            _lRec = value
-        End Set
+    End Property
+
+    Public ReadOnly Property TotMo As Double
+        Get
+            Dim query = (From rec In LRec Where rec.Tipo = TMO Select rec)
+            Return query.Sum(Function(rec) rec.Parcial)
+        End Get
+    End Property
+
+    Public ReadOnly Property TotMa As Double
+        Get
+            Dim query = (From rec In LRec Where rec.Tipo = TMat Select rec)
+            Return query.Sum(Function(rec) rec.Parcial)
+        End Get
+    End Property
+
+    Public ReadOnly Property TotEq As Double
+        Get
+            Dim query = (From rec In LRec Where rec.Tipo = TEQ Select rec)
+            Return query.Sum(Function(rec) rec.Parcial)
+        End Get
+    End Property
+
+    Public ReadOnly Property TotSc As Double
+        Get
+            Dim query = (From rec In LRec Where rec.Tipo = TSC Select rec)
+            Return query.Sum(Function(rec) rec.Parcial)
+        End Get
     End Property
 
     Public Sub New()
         lsPartidas = New ClPartidas
         LsSP = New ClPartidas
-        LRec = New ClRecursos
+        _lRec = New ClRecursos
     End Sub
 
+    Private Function ListarRecursos() As ClRecursos
+        Dim temp As New ClRecursos
+        For Each part As ClPartida In lsPartidas
+            temp.AnexaLista(ClPartida.ListarRecursos(part, LsSP))
+        Next
+        _lRec = temp
+        Return temp
+    End Function
+
+    Private Function ListarSP() As ClPartidas
+        Dim temp As New ClPartidas
+        For Each part As ClPartida In lsPartidas
+            temp.AnexarLista(ClPartida.ListarSPs(part, LsSP))
+        Next
+        Return temp
+
+    End Function
+
+    Public ReadOnly Property ListarSubPartidas As ClPartidas
+        Get
+            Return ListarSP()
+        End Get
+    End Property
 
 End Class
