@@ -109,8 +109,13 @@
     </Compile>
     <Compile Include="My Project\ClApu.vb" />
     <Compile Include="My Project\ClClonarObj.vb" />
+    <Compile Include="My Project\ClDataEspec.vb" />
+    <Compile Include="My Project\ClElemFase.vb" />
+    <Compile Include="My Project\ClElemsFase.vb" />
     <Compile Include="My Project\ClEspecialidad.vb" />
+    <Compile Include="My Project\ClEspecialidades.vb" />
     <Compile Include="My Project\ClExcel.vb" />
+    <Compile Include="My Project\ClFase.vb" />
     <Compile Include="My Project\ClPartida.vb" />
     <Compile Include="My Project\ClPartidas.vb" />
     <Compile Include="My Project\ClProy.vb" />

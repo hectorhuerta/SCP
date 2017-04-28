@@ -7,12 +7,14 @@ Public Class ClPartida
 
     Private _codigo As String 'Código interno de la partida
     Private _codcli As String 'Código de la partida dado por el Cliente
+    Private _codFase As String 'Código de la Fase de Control o Centro de Costo
     Private _descripcion As String
     Private _und As String
     Private _metrado As Double
     Private _pu As Double
     Private _rdmo As Double
     Private _rdeq As Double
+    Private _estaDetallada As Boolean 'Indica si se le ha aplicado la función DetallaPartida
     Private _lrecApu As ClApu  'Listado de recursos del apu, incluye el campo cuadrilla
     Private _lsp As ClPartidas  'Listado de subpartidas de la partida
 
@@ -136,6 +138,30 @@ Public Class ClPartida
         End Set
     End Property
 
+    Public Property CodFase As String
+        Get
+            Return _codFase
+        End Get
+        Set(value As String)
+            If value <> _codFase Then
+                _codFase = value
+                onPropertyChanged("CodFase")
+            End If
+        End Set
+    End Property
+
+    Public Property EstaDetallada As Boolean
+        Get
+            Return _estaDetallada
+        End Get
+        Set(value As Boolean)
+            If value <> _estaDetallada Then
+                _estaDetallada = value
+                onPropertyChanged("EstaDetallada")
+            End If
+        End Set
+    End Property
+
     <NonSerialized()>
     Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
@@ -151,6 +177,7 @@ Public Class ClPartida
         _und = und
         _metrado = metrado
         _pu = pu
+        EstaDetallada = False
         LrecApu = New ClApu
         Lsp = New ClPartidas
     End Sub
@@ -160,7 +187,11 @@ Public Class ClPartida
         Me.New(cod, desc, und, metrado, pu)
         Me.Rdmo = RdMo
         Me.Rdeq = RdEq
+        Me.EstaDetallada = False
     End Sub
+    '<<< CalcularRecursos >>>
+    'Función recursiva que se encarga de generar la lista de los recursos de la partida, desanidando
+    'las subpartidas que contiene
 
     Private Shared Function CalcularRecursos(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClRecursos
         Dim lista As New ClRecursos
@@ -198,6 +229,9 @@ Public Class ClPartida
         Return lista
 
     End Function
+    '<<< ListarSPs >>>
+    'Función recursiva que genera un listado de las subpartidas de la partida, considerando el metrado que 
+    'corresponda. No corrige los metrados calculados de las subpartidas
 
     Public Shared Function ListarSPs(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClPartidas
         Dim lista As New ClPartidas
@@ -224,6 +258,10 @@ Public Class ClPartida
         Return lista
 
     End Function
+    '<<< ListarRecursos >>>
+    'Función que genera la lista de los recursos de una partida, desanidando las subpartidas que pudiera
+    'contener. Además corrige el error en las cantidades de recursos originado por las sucesivas operaciones de
+    'recursividad. Usa la función recursiva CalcularRecursos
 
     Public Shared Function ListarRecursos(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClRecursos
         Dim listaRec As New ClRecursos, i As Integer, j As Integer
@@ -244,5 +282,63 @@ Public Class ClPartida
         Return listaRec
 
     End Function
+    '<<< DetallaPartida >>>
+    'Función recursiva que acopla a la partida, todo el árbol de subpartidas con sus correspondientes
+    'recursos y cantidades según los APU, con la finalidad de poder asignarles una Fase de Control o 
+    'Centro de costo
+
+    Public Shared Function DetallaPartida(ByRef Part As ClPartida, ByRef BDSP As ClPartidas) As ClPartida
+        Dim i As Integer, BDTemp As New ClPartidas
+        Dim PartDet As ClPartida = ClClonarObj.Clonar(Part)
+
+        PartDet.Lsp.Clear()
+
+        For Each sp As ClPartida In Part.Lsp
+            i = BDSP.BuscaPartxNom(sp.Descripcion)
+            Dim spClone As ClPartida = ClClonarObj.Clonar(BDSP(i))
+            spClone.Metrado = sp.Metrado
+            spClone.Pu = sp.Pu
+            BDTemp.Add(spClone)
+        Next
+
+        If BDTemp.Any Then
+            For Each sp As ClPartida In BDTemp
+                PartDet.Lsp.Add(ClPartida.DetallaPartida(sp, BDSP))
+            Next
+        End If
+
+        BDTemp.Clear()
+        BDTemp = Nothing
+
+        Part.EstaDetallada = True
+
+        Return PartDet
+
+    End Function
+    '<<< AsignaFase >>>
+    'Procedimiento recursivo que asigna la fase a la partida y propaga la asignación a todos los recursos y
+    'subpartidas de su árbol. Se requiere que el parámetro Part, sea la partida detallada que se obtiene 
+    'mediante la función DetallaPartida. El parámetro Prioridad puede ser 1 ó 2 dependiendo de si lo que se
+    'fasea es una partida (p=1) o una subpartida (p=2)
+
+    Public Shared Sub AsignaFase(ByVal CodFase As String, ByVal Prioridad As Integer, Part As ClPartida,
+                                      ByRef BDSP As ClPartidas)
+
+        Part.CodFase = CodFase
+
+        For Each rec As ClRecApu In Part.LrecApu
+            If Prioridad > rec.Prioridad Then
+                rec.CodFase = CodFase
+                rec.Prioridad = Prioridad
+            End If
+        Next
+
+        For Each sp As ClPartida In Part.Lsp
+            AsignaFase(CodFase, Prioridad, sp, BDSP)
+        Next
+
+
+    End Sub
 
 End Class
+

@@ -14,9 +14,9 @@ Public Class ClProy
     Private _numContrat As String
     Private _monContrat As Double
     Private _finicio As Date
-    Private _plazo As Single
-    Private _especialidades As Boolean 'Indica si tiene o nó especialidades
-    Private _lespec As ObservableCollection(Of ClEspecialidad)
+    Private _plazoDias As Single
+    Private _presupOferta As ClEspecialidades
+    Private _presupMeta As ClEspecialidades
 
     Public Property Codigo As String
         Get
@@ -126,42 +126,45 @@ Public Class ClProy
         End Set
     End Property
 
-    Public Property Plazo As Single
+    Public Property PlazoDias As Single
         Get
-            Return _plazo
+            Return _plazoDias
         End Get
         Set(value As Single)
-            If value <> _plazo Then
-                _plazo = value
+            If value <> _plazoDias Then
+                _plazoDias = value
                 onPropertyChanged("Plazo")
             End If
         End Set
     End Property
     Public ReadOnly Property FFin As Date
         Get
-            Return FInicio.AddDays(_plazo - 1)
+            Return FInicio.AddDays(_plazoDias - 1)
         End Get
 
     End Property
 
-    Public Property Especialidades As Boolean
+    Public ReadOnly Property ResumPOferta As IEnumerable(Of ClDataEspec)
         Get
-            Return _especialidades
+            Return PresupOferta.ResumenEspec
         End Get
-        Set(value As Boolean)
-            If value <> _especialidades Then
-                _especialidades = value
-                onPropertyChanged("Especialidades")
-            End If
+    End Property
+
+    Public Property PresupOferta As ClEspecialidades
+        Get
+            Return _presupOferta
+        End Get
+        Set(value As ClEspecialidades)
+            _presupOferta = value
         End Set
     End Property
 
-    Public Property Lespec As ObservableCollection(Of ClEspecialidad)
+    Public Property PresupMeta As ClEspecialidades
         Get
-            Return _lespec
+            Return _presupMeta
         End Get
-        Set(value As ObservableCollection(Of ClEspecialidad))
-            _lespec = value
+        Set(value As ClEspecialidades)
+            _presupMeta = value
         End Set
     End Property
 

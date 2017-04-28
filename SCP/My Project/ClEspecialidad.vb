@@ -1,5 +1,6 @@
 ﻿Imports System.Collections.ObjectModel
 Imports SCP
+
 <Serializable>
 Public Class ClEspecialidad
     Private _nombre As String
